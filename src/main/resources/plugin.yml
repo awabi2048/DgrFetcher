@@ -3,3 +3,10 @@ version: '0.1-ALPHA'
 main: me.awabi2048.dgr_fetcher.Main
 api-version: '1.21'
 authors: [ awabi2048 ]
+depend: [Vault]
+
+commands:
+  quest:
+    description: "/quest [id]"
+
+permissions:

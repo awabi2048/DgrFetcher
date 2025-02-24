@@ -1,0 +1,17 @@
+quest_1:
+  icon: CHEST
+  individual_goal:
+    STONE: 100
+    REDSTONE: 50
+    OAK_LOG: 100
+  global_goal:
+    STONE: 1000
+    REDSTONE: 500
+    OAK_LOG: 1000
+  reward:
+    individual: # 達成したら必ず貰える
+      donguri: 100
+      exp_point: 400
+    global: # グローバルゴールへの貢献度合いに応じた量が貰える
+      donguri: 500
+      exp_point: 1000

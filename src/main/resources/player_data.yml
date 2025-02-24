@@ -1,0 +1,8 @@
+uuid:
+  quest_completed: 0
+  active_quests:
+    quest_1:
+      is_completed: false
+      STONE: 20
+      REDSTONE: 20
+      OAK_LOG: 20

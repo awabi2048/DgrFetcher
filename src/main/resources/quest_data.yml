@@ -1,5 +1,4 @@
 quest_1:
-  icon: CHEST
   individual_goal:
     STONE: 100
     REDSTONE: 50

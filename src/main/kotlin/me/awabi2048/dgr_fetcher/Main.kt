@@ -2,6 +2,7 @@ package me.awabi2048.dgr_fetcher
 
 import me.awabi2048.dgr_fetcher.command.OpenQuestUICommand
 import me.awabi2048.dgr_fetcher.data_file.DataFile
+import me.awabi2048.dgr_fetcher.listener.QuestUIListener
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.plugin.RegisteredServiceProvider
 import org.bukkit.plugin.java.JavaPlugin
@@ -28,6 +29,9 @@ class Main : JavaPlugin() {
 
         // コマンド
         getCommand("quest")?.setExecutor(OpenQuestUICommand)
+
+        // リスナー
+        server.pluginManager.registerEvents(QuestUIListener, instance)
 
         // データファイルをコピー
         DataFile.copy()

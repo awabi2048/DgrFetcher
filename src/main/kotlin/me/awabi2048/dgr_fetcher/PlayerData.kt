@@ -18,11 +18,28 @@ class PlayerData(private val player: Player) {
         }
     }
 
-    fun getQuestData(id: String): PlayerQuestData {
-        return PlayerQuestData(player, id)
+    var totalContributed: Int?
+        get() {
+            return dataSection?.getInt("total_contributed")
+        }
+        set(value) {
+            DataFile.playerData.set("${player.uniqueId}.total_contributed", value!!.coerceAtLeast(0))
+        }
+
+    var questCompleted: Int?
+        get() {
+            return dataSection?.getInt("quest_completed")
+        }
+        set(value) {
+            DataFile.playerData.set("${player.uniqueId}.quest_completed", value!!.coerceAtLeast(0))
+        }
+
+    fun getQuestData(quest: Quest): PlayerQuestData {
+        return PlayerQuestData(player, quest)
     }
 
-    class PlayerQuestData(val player: Player, val id: String) {
+    class PlayerQuestData(val player: Player, val quest: Quest) {
+        private val id = quest.id
         private val dataSection = DataFile.playerData.getConfigurationSection("${player.uniqueId}.active_quests.$id")
 
         var isCompleted: Boolean?
@@ -36,6 +53,26 @@ class PlayerData(private val player: Player) {
 
         fun getContributionByMaterial(material: Material): Int? {
             return dataSection?.getInt(material.toString())
+        }
+
+        fun processContribution(amount: Int, material: Material): Int? {
+            if (quest.isRegistered){
+                val currentContribution = getContributionByMaterial(material)!!
+                val goal = quest.globalGoal!![material]!!
+
+                if (currentContribution + amount > goal) {
+                    setContributionByMaterial(goal, material)
+                    return currentContribution + amount - goal
+                } else {
+                    setContributionByMaterial(currentContribution + amount, material)
+                    return 0
+                }
+
+            } else return null
+        }
+
+        private fun setContributionByMaterial(amount: Int, material: Material) {
+
         }
     }
 }

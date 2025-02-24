@@ -53,7 +53,7 @@ class Quest(val id: String) {
 
     fun getGlobalContributionByMaterial(material: Material): Int? {
         return if (isRegistered) DataFile.playerData.getKeys(false).sumOf {
-            PlayerData(Bukkit.getOfflinePlayer(it).player!!).getQuestData(id).getContributionByMaterial(material)!!
+            PlayerData(Bukkit.getOfflinePlayer(it).player!!).getQuestData(this).getContributionByMaterial(material)!!
         } else null
     }
 

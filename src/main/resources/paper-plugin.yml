@@ -1,5 +1,0 @@
-name: DgrFetcher
-version: '0.1-ALPHA'
-main: me.awabi2048.dgr_fetcher.Main
-api-version: '1.21'
-authors: [ awabi2048 ]

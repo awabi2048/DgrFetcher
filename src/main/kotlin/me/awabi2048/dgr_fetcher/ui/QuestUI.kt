@@ -25,19 +25,23 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
         // 納品
         val fetchSlot = event.clickedInventory!!.indexOfLast { it != null && it.itemMeta.itemName == "§b［納品する］" }
 
+        val material = event.cursor.type
+
         if (event.slot != fetchSlot) return
-        if (event.cursor.type !in quest.globalGoal!!.keys) return
+        if (material !in quest.globalGoal!!.keys) return
 
         val player = event.whoClicked as Player
 
         // 納品個数更新
         val playerData = PlayerData(player).getQuestData(quest)
-        val remained = playerData.processContribution(event.cursor.amount, event.cursor.type)!!
 
-        println("remained: $remained")
+        val remained = playerData.processContribution(event.cursor.amount, material)!!
 
         //
-        event.setCursor(event.cursor.apply { amount = remained })
+        player.setItemOnCursor(event.cursor.apply { amount = remained })
+
+        // 通知
+        val individualGoalReached = playerData.getContributionByMaterial(material)!! >= quest.individualGoal!![material]!!
 
         open()
 
@@ -47,7 +51,7 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
     override fun construct(): Inventory {
 
         fun slotOf(index: Int): Int {
-            val row = index / 7 + 2
+            val row = index / 7 + 1
             val column = index % 7 + 1
             val slot = row * 9 + column
 
@@ -60,7 +64,7 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
         val playerQuestData = PlayerData(player).getQuestData(quest)
         val playerData = PlayerData(player)
 
-        val ui = Bukkit.createInventory(null, (requirementTypes / 7 + 4) * 9, "§8§lQuest")
+        val ui = createTemplate(requirementTypes / 7 + 4, "§8§lQuest")!!
 
         var individualContributionRateTotal = 0
         var globalContributionRateTotal = 0
@@ -93,7 +97,7 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
 
             val globalContributionText = when (globalContribution >= globalGoal) {
                 true -> "$index §7グローバル §a納品完了！"
-                false -> "$index §7グローバル §6$globalContribution§7/$globalGoal §7(§e$globalContributionRate%§7)、§7うち §e$individualContribution§7/$globalGoal (§e$individualContributionRateToGlobal%§7)"
+                false -> "$index §7グローバル §6$globalContribution§7/$globalGoal §7(§e$globalContributionRate%§7)、§7うちあなたの貢献 §e$individualContribution§7/$globalGoal (§e$individualContributionRateToGlobal%§7)"
             }
 
             // アイテムのmetaに書き込み

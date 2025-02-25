@@ -55,14 +55,27 @@ class PlayerData(private val player: Player) {
 
         private val dataSection = DataFile.playerData.getConfigurationSection("${player.uniqueId}.active_quests.$id")
 
-        var isCompleted: Boolean?
+        var hasContributed: Boolean?
             get() {
-                return dataSection?.getBoolean("is_completed")
+                return dataSection?.getBoolean("has_contributed")
             }
             set(value) {
-                DataFile.playerData.set("${player.uniqueId}.active_quests.$id", value)
-                DataFile.save()
+                if (value != null) {
+                    DataFile.playerData.set("${player.uniqueId}.active_quests.$id.has_contributed", value)
+                    DataFile.save()
+                }
             }
+
+//        var isCompleted: Boolean?
+//            get() {
+//                return dataSection?.getBoolean("is_completed")
+//            }
+//            set(value) {
+//                if (value != null){
+//                    DataFile.playerData.set("${player.uniqueId}.active_quests.$id.is_completed", value)
+//                    DataFile.save()
+//                }
+//            }
 
         fun getContributionByMaterial(material: Material): Int? {
             return dataSection?.getInt(material.toString())
@@ -75,8 +88,14 @@ class PlayerData(private val player: Player) {
         fun processContribution(amount: Int, material: Material): Int? {
             if (quest.isRegistered) {
                 val currentContribution = getContributionByMaterial(material)!!
+                val currentGlobalContribution = quest.getGlobalContributionByMaterial(material)!!
                 val individualGoal = quest.individualGoal!![material]!!
                 val globalGoal = quest.globalGoal!![material]!!
+
+                val individualGoalReached =
+                    currentContribution < individualGoal && currentContribution + amount >= individualGoal
+                val globalGoalReached =
+                    currentGlobalContribution < globalGoal && currentGlobalContribution + amount >= globalGoal
 
                 // 次の到達点までの一時的なゴール。納品しすぎないようにする配慮です
                 val goal = when (currentContribution) {
@@ -99,6 +118,16 @@ class PlayerData(private val player: Player) {
                 player.sendMessage("§6${localizedName}§7を§e${consumeAmount}個§7納品しました！")
 
                 setContributionByMaterial(currentContribution + consumeAmount, material)
+
+                // 新たに納品完了 →
+                if (individualGoalReached) {
+                    quest.individualGoalReached(player)
+                }
+
+                if (globalGoalReached) {
+                    quest.globalGoalReached()
+                }
+
                 return amount - consumeAmount
 
             } else return null

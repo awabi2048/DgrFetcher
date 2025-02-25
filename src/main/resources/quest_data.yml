@@ -1,4 +1,6 @@
 quest_1:
+  name: "くえすと"
+  description: "説明文"
   individual_goal:
     STONE: 100
     REDSTONE: 50

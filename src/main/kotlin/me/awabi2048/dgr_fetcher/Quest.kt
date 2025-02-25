@@ -19,6 +19,16 @@ class Quest(val id: String) {
             return (dataSection != null)
         }
 
+    val name: String?
+        get() {
+            return dataSection?.getString("name")
+        }
+
+    val description: String?
+        get() {
+            return dataSection?.getString("description")
+        }
+
     val individualGoal: Map<Material, Int>?
         get() {
             return dataSection?.getConfigurationSection("individual_goal")?.getKeys(false)?.associate {
@@ -53,12 +63,32 @@ class Quest(val id: String) {
         }
 
     fun getGlobalContributionByMaterial(material: Material): Int? {
-        return if (isRegistered) DataFile.playerData.getKeys(false).sumOf { uuid -> String
-            PlayerData(Bukkit.getPlayer(UUID.fromString(uuid))!!).getQuestData(this).getContributionByMaterial(material)!!
+        return if (isRegistered) DataFile.playerData.getKeys(false).sumOf { uuid ->
+            String
+            PlayerData(Bukkit.getPlayer(UUID.fromString(uuid))!!).getQuestData(this)
+                .getContributionByMaterial(material)!!
         } else null
     }
 
-    fun distributeIndividualReward(player: Player) {
+    fun individualGoalReached(player: Player) {
+        player.sendMessage("§aクエスト§7【§e$name§7】§aの納品アイテムをすべて完了しました！")
+        player.playSound(player, Sound.BLOCK_ANVIL_USE, 1.0f, 2.0f)
+        player.closeInventory()
+
+        distributeIndividualReward(player)
+    }
+
+    fun globalGoalReached() {
+        Bukkit.getOnlinePlayers().forEach {
+            it.sendMessage("§dクエスト§7【§e$name§7】§dの納品グローバル目標が達成されました！")
+            it.playSound(it, Sound.BLOCK_ANVIL_USE, 1.0f, 2.0f)
+            it.playSound(it, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f)
+        }
+
+        distributeGlobalReward()
+    }
+
+    private fun distributeIndividualReward(player: Player) {
         if (!isRegistered) return
         if (!player.isOnline) return
 
@@ -70,12 +100,38 @@ class Quest(val id: String) {
             Runnable {
 //                Donguri.give(player, donguri)
                 player.exp += expPoint
+                player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f)
             },
             20L
         )
 
         // TODO: お礼メッセージ
         player.sendMessage("$OAGE_PREFIX §fお礼の§6どんぐり§fです！ありがとー！")
-        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f)
+    }
+
+    private fun distributeGlobalReward() {
+        if (!isRegistered) return
+
+        // 少しでも参加したプレイヤーをリストアップ
+        val participatedPlayers = DataFile.playerData.getKeys(false)
+            .filter { PlayerData(Bukkit.getPlayer(UUID.fromString(it))!!).getQuestData(this).hasContributed == true }
+            .map {Bukkit.getPlayer(UUID.fromString(it))!!}
+
+        participatedPlayers.forEach {
+            val donguri = globalReward!![QuestReward.DONGURI]!!
+            val expPoint = globalReward!![QuestReward.EXP_POINT]!!
+
+            it.sendMessage("$OAGE_PREFIX §fお礼の§6どんぐり§fです！ありがとー！dg:$donguri, exp:$expPoint")
+
+            Bukkit.getScheduler().runTaskLater(
+                instance,
+                Runnable {
+//                Donguri.give(player, donguri)
+                    it.exp += expPoint
+                    it.playSound(it, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f)
+                },
+                20L
+            )
+        }
     }
 }

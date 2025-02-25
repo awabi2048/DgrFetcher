@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.awabi2048</groupId>
-    <artifactId>DgrFetcher</artifactId>
+    <artifactId>DonguriFetcher</artifactId>
     <version>0.1-ALPHA</version>
     <packaging>jar</packaging>
 
-    <name>DgrFetcher</name>
+    <name>DonguriFetcher</name>
 
     <properties>
         <java.version>21</java.version>

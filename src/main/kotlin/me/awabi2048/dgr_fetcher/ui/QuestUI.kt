@@ -3,6 +3,7 @@ package me.awabi2048.dgr_fetcher.ui
 import me.awabi2048.dgr_fetcher.Main.Companion.instance
 import me.awabi2048.dgr_fetcher.PlayerData
 import me.awabi2048.dgr_fetcher.Quest
+import me.awabi2048.dgr_fetcher.misc.Lib
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -17,11 +18,12 @@ import kotlin.math.roundToInt
 
 class QuestUI(private val player: Player, private val quest: Quest) : AbstractInteractiveUI(player) {
     override fun onClick(event: InventoryClickEvent) {
+
         if (!quest.isRegistered) throw IllegalArgumentException("Unregistered quest given.")
         event.isCancelled = true
 
         // 納品
-        val fetchSlot = event.clickedInventory!!.indexOfLast { it.itemMeta.itemName == "［納品する］" } // 納品種類からスロットの場所を計算
+        val fetchSlot = event.clickedInventory!!.indexOfLast { it != null && it.itemMeta.itemName == "§b［納品する］" }
 
         if (event.slot != fetchSlot) return
         if (event.cursor.type !in quest.globalGoal!!.keys) return
@@ -31,6 +33,8 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
         // 納品個数更新
         val playerData = PlayerData(player).getQuestData(quest)
         val remained = playerData.processContribution(event.cursor.amount, event.cursor.type)!!
+
+        println("remained: $remained")
 
         //
         event.setCursor(event.cursor.apply { amount = remained })
@@ -56,7 +60,7 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
         val playerQuestData = PlayerData(player).getQuestData(quest)
         val playerData = PlayerData(player)
 
-        val ui = Bukkit.createInventory(null, requirementTypes / 7 + 4, "§8§lQuest")
+        val ui = Bukkit.createInventory(null, (requirementTypes / 7 + 4) * 9, "§8§lQuest")
 
         var individualContributionRateTotal = 0
         var globalContributionRateTotal = 0
@@ -87,7 +91,7 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
                 false -> "$index §7納品数 §6$individualContribution§7/$individualGoal (§e$individualContributionRate%§7)"
             }
 
-            val globalContributionText = when (individualContribution >= individualGoal) {
+            val globalContributionText = when (globalContribution >= globalGoal) {
                 true -> "$index §7グローバル §a納品完了！"
                 false -> "$index §7グローバル §6$globalContribution§7/$globalGoal §7(§e$globalContributionRate%§7)、§7うち §e$individualContribution§7/$globalGoal (§e$individualContributionRateToGlobal%§7)"
             }
@@ -114,11 +118,11 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
             val requirementCount = quest.globalGoal!![it]!!
             val playerContribution = PlayerData(player).getQuestData(quest).getContributionByMaterial(it)!!
 
-            val localizedName = Component.translatable(it.translationKey()).toString()
+            val localizedName = Component.translatable(it.translationKey()).compact()
 
             when (playerContribution >= requirementCount) {
                 true -> "$index §7$localizedName §e納品完了"
-                false -> "$index §7$localizedName §fあと§e${requirementTypes - playerContribution}個"
+                false -> "$index §7$localizedName §fあと§e${requirementCount - playerContribution}個"
             }
         }
 
@@ -134,9 +138,9 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
             ) + remainingItems + bar
 
             persistentDataContainer.set(
-                NamespacedKey(instance, "gui_item"),
+                NamespacedKey(instance, "quest_id"),
                 PersistentDataType.STRING,
-                "quest"
+                quest.id
             )
         }
 
@@ -154,10 +158,10 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
 
         val globalIcon = ItemStack(Material.GRASS_BLOCK)
 
-        // 設置
-        ui.setItem(38, playerIcon)
-        ui.setItem(40, fetchIcon)
-        ui.setItem(42, globalIcon)
+        // 設置: slotはUIのサイズに合わせて、後ろから◯番目
+        ui.setItem(ui.size - 7, playerIcon)
+        ui.setItem(ui.size - 5, fetchIcon)
+        ui.setItem(ui.size -3, globalIcon)
 
         return ui
     }

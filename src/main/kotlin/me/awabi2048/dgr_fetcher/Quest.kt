@@ -9,6 +9,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import java.util.*
 
 class Quest(val id: String) {
     private val dataSection = DataFile.questData.getConfigurationSection(id)
@@ -52,8 +53,8 @@ class Quest(val id: String) {
         }
 
     fun getGlobalContributionByMaterial(material: Material): Int? {
-        return if (isRegistered) DataFile.playerData.getKeys(false).sumOf {
-            PlayerData(Bukkit.getOfflinePlayer(it).player!!).getQuestData(this).getContributionByMaterial(material)!!
+        return if (isRegistered) DataFile.playerData.getKeys(false).sumOf { uuid -> String
+            PlayerData(Bukkit.getPlayer(UUID.fromString(uuid))!!).getQuestData(this).getContributionByMaterial(material)!!
         } else null
     }
 
@@ -67,7 +68,7 @@ class Quest(val id: String) {
         Bukkit.getScheduler().runTaskLater(
             instance,
             Runnable {
-                Donguri.give(player, donguri)
+//                Donguri.give(player, donguri)
                 player.exp += expPoint
             },
             20L

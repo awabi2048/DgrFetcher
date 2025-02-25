@@ -10,19 +10,19 @@ import org.bukkit.plugin.java.JavaPlugin
 class Main : JavaPlugin() {
     companion object {
         lateinit var instance: JavaPlugin
-        const val PREFIX = "§6DgrFetcher §7»"
+        const val PREFIX = "§6DonguriFetcher §7»"
         const val OAGE_PREFIX = "§6おあげちゃん §7»"
         lateinit var economy: Economy
     }
 
-    private fun setupEconomy(): Boolean {
-        val vault = server.pluginManager.getPlugin("Vault")?: return false
-
-        val rsp = server.servicesManager.getRegistration(Economy::class.java)?: return false
-
-        economy = rsp.provider
-        return true
-    }
+//    private fun setupEconomy(): Boolean {
+//        server.pluginManager.getPlugin("Vault")?: return false
+//
+//        val rsp = server.servicesManager.getRegistration(Economy::class.java)?: return false
+//
+//        economy = rsp.provider
+//        return true
+//    }
 
     override fun onEnable() {
         instance = this
@@ -35,14 +35,15 @@ class Main : JavaPlugin() {
 
         // データファイルをコピー
         DataFile.copy()
+        DataFile.load()
 
         // vault
-        val economySetup = setupEconomy()
-        if (!economySetup) {
-            logger.severe("Setup failed. Disabling plugin.")
-            server.pluginManager.disablePlugins()
-            return
-        }
+//        val economySetup = setupEconomy()
+//        if (!economySetup) {
+//            logger.severe("Setup failed. Disabling plugin.")
+//            server.pluginManager.disablePlugins()
+//            return
+//        }
     }
 
     override fun onDisable() {

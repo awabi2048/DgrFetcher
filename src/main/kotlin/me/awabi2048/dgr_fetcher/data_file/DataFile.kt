@@ -11,8 +11,6 @@ object DataFile {
     lateinit var questData: FileConfiguration
     lateinit var config: FileConfiguration
 
-    lateinit var dataMap: MutableMap<String, FileConfiguration>
-
     val files = listOf(
         "player_data.yml",
         "quest_data.yml",
@@ -20,25 +18,26 @@ object DataFile {
     )
 
     fun copy() {
-//        for (path in files) {
-//
-//        }
+        for (path in files) {
+            files.forEach {
+                if (!File(instance.dataFolder.path + it).exists()) {
+                    instance.saveResource(it, false)
+                    instance.logger.info("DonguriFetcher >> Copied \"$it\" to the data folder.")
+                }
+            }
+        }
     }
 
     fun load() {
-        for (path in files) {
-            dataMap[path]?.load(path)
-        }
-
-        playerData.load("player_data.yml")
-        questData.load("quest_data.yml")
-        config.load("config.yml")
+        playerData = YamlUtil.load("player_data.yml")
+        questData = YamlUtil.load("quest_data.yml")
+        config = YamlUtil.load("config.yml")
     }
 
     fun save() {
-        playerData.save("player_data.yml")
-        playerData.save("player_data.yml")
-        playerData.save("player_data.yml")
+        YamlUtil.save("player_data.yml", playerData as YamlConfiguration)
+        YamlUtil.save("quest_data.yml", questData as YamlConfiguration)
+        YamlUtil.save("config.yml", config as YamlConfiguration)
     }
 
     object YamlUtil {

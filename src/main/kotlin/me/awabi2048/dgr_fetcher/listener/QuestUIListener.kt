@@ -13,10 +13,13 @@ import org.bukkit.persistence.PersistentDataType
 object QuestUIListener : Listener {
     @EventHandler
     fun onClick(event: InventoryClickEvent) {
-        if (event.clickedInventory?.any { it.itemMeta.itemName == "［納品する］" } == true) {
+
+        if (event.clickedInventory?.any { it != null && it.itemMeta.persistentDataContainer.has(NamespacedKey(instance, "quest_id")) } == true) {
+            event.isCancelled = true
+
             val questId =
-                event.clickedInventory!!.find { it.itemMeta.itemName == "［納品する］" }?.itemMeta?.persistentDataContainer?.get(
-                    NamespacedKey(instance, "gui_item"),
+                event.clickedInventory!!.find { it != null && it.itemMeta.persistentDataContainer.has(NamespacedKey(instance, "quest_id")) }?.itemMeta?.persistentDataContainer?.get(
+                    NamespacedKey(instance, "quest_id"),
                     PersistentDataType.STRING
                 )?: return
 

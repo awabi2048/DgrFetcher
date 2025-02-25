@@ -39,11 +39,7 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
 
         //
         player.setItemOnCursor(event.cursor.apply { amount = remained })
-
-        // 通知
-        val individualGoalReached = playerData.getContributionByMaterial(material)!! >= quest.individualGoal!![material]!!
-
-        open()
+        if (remained != -1) open()
 
         return
     }
@@ -118,17 +114,38 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
         }
 
         // あと何個の表示
-        val remainingItems = quest.globalGoal!!.keys.map {
-            val requirementCount = quest.globalGoal!![it]!!
-            val playerContribution = PlayerData(player).getQuestData(quest).getContributionByMaterial(it)!!
+        val remainingItems = when(playerData.getQuestData(quest).isCompleted) {
 
-            val localizedName = Component.translatable(it.translationKey()).compact()
+            true -> {
+                quest.globalGoal!!.keys.map {
+                    val requirementCount = quest.globalGoal!![it]!!
+                    val playerContribution = PlayerData(player).getQuestData(quest).getContributionByMaterial(it)!!
 
-            when (playerContribution >= requirementCount) {
-                true -> "$index §7$localizedName §e納品完了"
-                false -> "$index §7$localizedName §fあと§e${requirementCount - playerContribution}個"
+                    val localizedName = Lib.resolveComponent(Component.translatable(it.translationKey()))
+
+                    when (playerContribution >= requirementCount) {
+                        true -> "$index §b$localizedName §d納品完了！"
+                        false -> "$index §b$localizedName §7あと §6${requirementCount - playerContribution}個"
+                    }
+                }
             }
-        }
+
+            false -> {
+                quest.individualGoal!!.keys.map {
+                    val requirementCount = quest.individualGoal!![it]!!
+                    val playerContribution = PlayerData(player).getQuestData(quest).getContributionByMaterial(it)!!
+
+                    val localizedName = Lib.resolveComponent(Component.translatable(it.translationKey()))
+
+                    when (playerContribution >= requirementCount) {
+                        true -> "$index §b$localizedName §d納品完了！"
+                        false -> "$index §b$localizedName §7あと §6${requirementCount - playerContribution}個"
+                    }
+                }
+            }
+
+            else -> null
+        }!!
 
         // 中央・納品アイコン
         val fetchIcon = ItemStack(Material.CHEST)

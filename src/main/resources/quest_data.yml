@@ -1,6 +1,6 @@
 quest_1:
-  name: "くえすと"
-  description: "説明文"
+  name: くえすと
+  description: 説明文
   individual_goal:
     STONE: 100
     REDSTONE: 50
@@ -9,10 +9,9 @@ quest_1:
     STONE: 1000
     REDSTONE: 500
     OAK_LOG: 1000
-  reward:
-    individual: # 達成したら必ず貰える
-      donguri: 100
-      exp_point: 400
-    global: # グローバルゴールへの貢献度合いに応じた量が貰える
-      donguri: 500
-      exp_point: 1000
+  individual_reward:
+    donguri: 100
+    exp_point: 400
+  global_reward: # グローバルゴールへの貢献度合いに応じた量が貰える
+    donguri: 500
+    exp_point: 1000

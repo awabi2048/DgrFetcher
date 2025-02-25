@@ -46,14 +46,14 @@ class Quest(val id: String) {
     val individualReward: Map<QuestReward, Int>?
         get() {
             return dataSection?.getConfigurationSection("individual_reward")?.getKeys(false)?.associate {
-                QuestReward.valueOf(it.uppercase()) to dataSection.getInt("reward.individual.$it")
+                QuestReward.valueOf(it.uppercase()) to dataSection.getInt("individual_reward.$it")
             }
         }
 
     val globalReward: Map<QuestReward, Int>?
         get() {
             return dataSection?.getConfigurationSection("global_reward")?.getKeys(false)?.associate {
-                QuestReward.valueOf(it.uppercase()) to dataSection.getInt("reward.global.$it")
+                QuestReward.valueOf(it.uppercase()) to dataSection.getInt("global_reward.$it")
             }
         }
 
@@ -76,6 +76,7 @@ class Quest(val id: String) {
         player.closeInventory()
 
         distributeIndividualReward(player)
+        PlayerData(player).getQuestData(this).isCompleted = true
     }
 
     fun globalGoalReached() {
@@ -99,14 +100,14 @@ class Quest(val id: String) {
             instance,
             Runnable {
 //                Donguri.give(player, donguri)
-                player.exp += expPoint
+                player.totalExperience += expPoint
                 player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f)
-            },
-            20L
-        )
 
-        // TODO: お礼メッセージ
-        player.sendMessage("$OAGE_PREFIX §fお礼の§6どんぐり§fです！ありがとー！")
+                // TODO: お礼メッセージ
+                player.sendMessage("$OAGE_PREFIX §fお礼の§6 ${EmojiIcon.DONGURI} §eどんぐり§fです！ありがとー！")
+            },
+            50L
+        )
     }
 
     private fun distributeGlobalReward() {

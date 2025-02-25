@@ -14,7 +14,8 @@ class PlayerData(private val player: Player) {
         if (!DataFile.playerData.contains("${player.uniqueId}")) {
             // initialize
             val initialData = mapOf(
-                "quest_completed" to 0
+                "total_contributed" to 0,
+                "quest_completed" to 0,
             )
 
             DataFile.playerData.createSection("${player.uniqueId}", initialData)
@@ -48,7 +49,10 @@ class PlayerData(private val player: Player) {
         init {
             if (!DataFile.playerData.contains("${player.uniqueId}.active_quests.${quest.id}")) {
                 val activeQuestMap = quest.globalGoal?.keys?.associate { it to 0 }
+
                 DataFile.playerData.createSection("${player.uniqueId}.active_quests.${quest.id}", activeQuestMap!!)
+                DataFile.playerData.set("${player.uniqueId}.active_quests.${quest.id}.is_completed", false)
+
                 DataFile.save()
             }
         }
@@ -66,16 +70,16 @@ class PlayerData(private val player: Player) {
                 }
             }
 
-//        var isCompleted: Boolean?
-//            get() {
-//                return dataSection?.getBoolean("is_completed")
-//            }
-//            set(value) {
-//                if (value != null){
-//                    DataFile.playerData.set("${player.uniqueId}.active_quests.$id.is_completed", value)
-//                    DataFile.save()
-//                }
-//            }
+        var isCompleted: Boolean?
+            get() {
+                return dataSection?.getBoolean("is_completed")
+            }
+            set(value) {
+                if (value != null) {
+                    DataFile.playerData.set("${player.uniqueId}.active_quests.$id.is_completed", value)
+                    DataFile.save()
+                }
+            }
 
         fun getContributionByMaterial(material: Material): Int? {
             return dataSection?.getInt(material.toString())
@@ -83,7 +87,7 @@ class PlayerData(private val player: Player) {
 
         /**
          * @param amount 納品を試みるアイテム数。必要数を超える場合は、その値を返します。
-         * @return 納品後の余剰アイテム数。
+         * @return 納品後の余剰アイテム数。特別な場合として、個人/グローバル目標達成時に-1を返します。
          */
         fun processContribution(amount: Int, material: Material): Int? {
             if (quest.isRegistered) {
@@ -91,11 +95,11 @@ class PlayerData(private val player: Player) {
                 val currentGlobalContribution = quest.getGlobalContributionByMaterial(material)!!
                 val individualGoal = quest.individualGoal!![material]!!
                 val globalGoal = quest.globalGoal!![material]!!
+                val playerData = PlayerData(player)
 
-                val individualGoalReached =
-                    currentContribution < individualGoal && currentContribution + amount >= individualGoal
-                val globalGoalReached =
-                    currentGlobalContribution < globalGoal && currentGlobalContribution + amount >= globalGoal
+                // TODO: Global Goal
+//                val globalGoalReached =
+//                    currentGlobalContribution < globalGoal && currentGlobalContribution + amount >= globalGoal
 
                 // 次の到達点までの一時的なゴール。納品しすぎないようにする配慮です
                 val goal = when (currentContribution) {
@@ -113,21 +117,29 @@ class PlayerData(private val player: Player) {
 
                 val localizedName = Lib.resolveComponent(Component.translatable(material.translationKey()))
 
+                player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1.0f, 1.5f)
                 player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
                 player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
                 player.sendMessage("§6${localizedName}§7を§e${consumeAmount}個§7納品しました！")
 
                 setContributionByMaterial(currentContribution + consumeAmount, material)
 
+                // クリアフラグはついてないが、すべての要件を満たしている → 今回の納品でクリアした
+                val individualGoalReached = quest.individualGoal!!.keys.all {
+                    playerData.getQuestData(quest).getContributionByMaterial(it)!! >= quest.individualGoal!![it]!!
+                } && !playerData.getQuestData(quest).isCompleted!!
+
                 // 新たに納品完了 →
                 if (individualGoalReached) {
                     quest.individualGoalReached(player)
+
                 }
 
-                if (globalGoalReached) {
-                    quest.globalGoalReached()
-                }
+//                if (globalGoalReached) {
+//                    quest.globalGoalReached()
+//                }
 
+                if (individualGoalReached) return -1
                 return amount - consumeAmount
 
             } else return null

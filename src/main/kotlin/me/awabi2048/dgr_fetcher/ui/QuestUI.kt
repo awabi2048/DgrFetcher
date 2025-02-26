@@ -5,6 +5,7 @@ import me.awabi2048.dgr_fetcher.PlayerData
 import me.awabi2048.dgr_fetcher.Quest
 import me.awabi2048.dgr_fetcher.misc.Lib
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor.AQUA
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -114,19 +115,21 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
         }
 
         // あと何個の表示
-        val remainingItems = when(playerData.getQuestData(quest).isCompleted) {
+        val remainingItems = when (playerData.getQuestData(quest).isCompleted) {
 
             true -> {
-                quest.globalGoal!!.keys.map {
+                quest.individualGoal!!.keys.map {
                     val requirementCount = quest.globalGoal!![it]!!
                     val playerContribution = PlayerData(player).getQuestData(quest).getContributionByMaterial(it)!!
 
-                    val localizedName = Lib.resolveComponent(Component.translatable(it.translationKey()))
-
-                    when (playerContribution >= requirementCount) {
-                        true -> "$index §b$localizedName §d納品完了！"
-                        false -> "$index §b$localizedName §7あと §6${requirementCount - playerContribution}個"
+                    val contributionInfo = when (playerContribution >= requirementCount) {
+                        true -> "§d納品完了！"
+                        false -> "§7あと §6${requirementCount - playerContribution}個"
                     }
+
+                    Component.text(index)
+                        .append(Component.translatable(it.translationKey())).color(AQUA)
+                        .append(Component.text(contributionInfo))
                 }
             }
 
@@ -135,12 +138,14 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
                     val requirementCount = quest.individualGoal!![it]!!
                     val playerContribution = PlayerData(player).getQuestData(quest).getContributionByMaterial(it)!!
 
-                    val localizedName = Lib.resolveComponent(Component.translatable(it.translationKey()))
-
-                    when (playerContribution >= requirementCount) {
-                        true -> "$index §b$localizedName §d納品完了！"
-                        false -> "$index §b$localizedName §7あと §6${requirementCount - playerContribution}個"
+                    val contributionInfo = when (playerContribution >= requirementCount) {
+                        true -> "§d納品完了！"
+                        false -> "§7あと §6${requirementCount - playerContribution}個"
                     }
+
+                    Component.text(index)
+                        .append(Component.translatable(it.translationKey())).color(AQUA)
+                        .append(Component.text(contributionInfo))
                 }
             }
 
@@ -151,12 +156,15 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
         val fetchIcon = ItemStack(Material.CHEST)
         fetchIcon.itemMeta = fetchIcon.itemMeta.apply {
             setItemName("§b［納品する］")
-            lore = listOf(
-                bar,
-                "§7ここにアイテムを§eドラッグ§7して、納品を行います。",
-                "§c一度納品したアイテムは取り出せません。",
-                bar,
-            ) + remainingItems + bar
+            lore(
+                listOf(
+                    Component.text(bar),
+                    Component.text("§7ここにアイテムを§eドラッグ§7して、納品を行います。"),
+                    Component.text("§c一度納品したアイテムは取り出せません。"),
+                    Component.text(bar)
+                ) + remainingItems +
+                        Component.text(bar)
+            )
 
             persistentDataContainer.set(
                 NamespacedKey(instance, "quest_id"),
@@ -182,7 +190,7 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
         // 設置: slotはUIのサイズに合わせて、後ろから◯番目
         ui.setItem(ui.size - 7, playerIcon)
         ui.setItem(ui.size - 5, fetchIcon)
-        ui.setItem(ui.size -3, globalIcon)
+        ui.setItem(ui.size - 3, globalIcon)
 
         return ui
     }

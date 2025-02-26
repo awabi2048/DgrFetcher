@@ -20,7 +20,7 @@ object DataFile {
     fun copy() {
         for (path in files) {
             files.forEach {
-                if (!File(instance.dataFolder.path + it).exists()) {
+                if (!File(instance.dataFolder.path + File.separator + it).exists()) {
                     instance.saveResource(it, false)
                     instance.logger.info("DonguriFetcher >> Copied \"$it\" to the data folder.")
                 }

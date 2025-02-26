@@ -6,6 +6,8 @@ import me.awabi2048.dgr_fetcher.Quest
 import me.awabi2048.dgr_fetcher.misc.Lib
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor.AQUA
+import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.text.format.TextDecorationAndState
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -123,13 +125,14 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
                     val playerContribution = PlayerData(player).getQuestData(quest).getContributionByMaterial(it)!!
 
                     val contributionInfo = when (playerContribution >= requirementCount) {
-                        true -> "§d納品完了！"
-                        false -> "§7あと §6${requirementCount - playerContribution}個"
+                        true -> " §d納品完了！"
+                        false -> " §7あと §6${requirementCount - playerContribution}個"
                     }
 
-                    Component.text(index)
+                    Component.text("$index ")
                         .append(Component.translatable(it.translationKey())).color(AQUA)
                         .append(Component.text(contributionInfo))
+                        .decoration(TextDecoration.ITALIC, false)
                 }
             }
 
@@ -139,13 +142,14 @@ class QuestUI(private val player: Player, private val quest: Quest) : AbstractIn
                     val playerContribution = PlayerData(player).getQuestData(quest).getContributionByMaterial(it)!!
 
                     val contributionInfo = when (playerContribution >= requirementCount) {
-                        true -> "§d納品完了！"
-                        false -> "§7あと §6${requirementCount - playerContribution}個"
+                        true -> " §d納品完了！"
+                        false -> " §7あと §6${requirementCount - playerContribution}個"
                     }
 
-                    Component.text(index)
+                    Component.text("$index ")
                         .append(Component.translatable(it.translationKey())).color(AQUA)
                         .append(Component.text(contributionInfo))
+                        .decoration(TextDecoration.ITALIC, false)
                 }
             }
 

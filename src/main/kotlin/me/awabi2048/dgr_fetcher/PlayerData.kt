@@ -3,6 +3,8 @@ package me.awabi2048.dgr_fetcher
 import me.awabi2048.dgr_fetcher.data_file.DataFile
 import me.awabi2048.dgr_fetcher.misc.Lib
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor.AQUA
+import net.kyori.adventure.text.format.NamedTextColor.GRAY
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
@@ -117,10 +119,13 @@ class PlayerData(private val player: Player) {
 
                 val localizedName = Lib.resolveComponent(Component.translatable(material.translationKey()))
 
+                val contributeText = Component.translatable(material.translationKey()).color(AQUA)
+                    .append(Component.text(" §7を§e${consumeAmount}個§7納品しました！"))
+
                 player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1.0f, 1.5f)
                 player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
                 player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
-                player.sendMessage("§6${localizedName}§7を§e${consumeAmount}個§7納品しました！")
+                player.sendMessage(contributeText)
 
                 setContributionByMaterial(currentContribution + consumeAmount, material)
 
